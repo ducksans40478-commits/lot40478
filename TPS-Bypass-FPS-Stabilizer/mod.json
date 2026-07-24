@@ -1,0 +1,76 @@
+{
+	"geode": "5.7.1",
+	"gd": {
+		"win": "2.2081",
+		"mac": "2.2081",
+		"android": "2.2081",
+		"ios": "2.2081"
+	},
+	"id": "yourname.tps-bypass-fps-stabilizer",
+	"name": "TPS Bypass & FPS Stabilizer",
+	"version": "v0.1.0",
+	"developer": "yourname",
+	"description": "Experimental: decouples physics tick rate from render FPS via a fixed-timestep accumulator, clamps dt spikes to reduce stutter/frame drops at high FPS caps, and reduces player jitter in hitbox-tight corridors on collision.",
+	"tags": [
+		"gameplay",
+		"performance",
+		"cheat"
+	],
+	"links": {
+		"source": "https://github.com/yourname/tps-bypass-fps-stabilizer"
+	},
+	"settings": {
+		"mod-disabled": {
+			"name": "Disable Mod",
+			"description": "Turn off all behavior from this mod.",
+			"type": "bool",
+			"default": false
+		},
+		"target-tps": {
+			"name": "Target TPS",
+			"description": "Physics/game-logic ticks per second to simulate via an accumulator, independent of your render FPS. Vanilla is roughly 240. Higher values increase precision at high speed but cost more CPU per rendered frame, and WILL desync from vanilla physics/replays. Experimental, use at your own risk.",
+			"type": "float",
+			"default": 240.0,
+			"min": 60.0,
+			"max": 1000.0,
+			"control": {
+				"arrows": true,
+				"arrow-step": 10.0,
+				"big-arrows": true,
+				"big-arrow-step": 50.0,
+				"slider": true,
+				"slider-step": 10.0,
+				"input": true
+			}
+		},
+		"enable-dt-clamp": {
+			"name": "Clamp Frame Time Spikes",
+			"description": "Caps how large a single frame's dt can be, and how many physics ticks one frame can trigger, before it reaches the game/physics update. This is the actual fix for stutter/'lag spikes' when FPS is set high but frame pacing is inconsistent (common with uncapped FPS or high refresh monitors). Safe to leave on.",
+			"type": "bool",
+			"default": true
+		},
+		"max-dt-ms": {
+			"name": "Max Frame Time (ms)",
+			"description": "Any frame time above this is clamped down to this value before being passed to the game update. Lower = smoother but can slightly slow down apparent time during real lag spikes. 16.6ms = 60fps step, 8.3ms = 120fps step.",
+			"type": "float",
+			"default": 16.6,
+			"min": 4.0,
+			"max": 50.0,
+			"control": {
+				"arrows": true,
+				"arrow-step": 1.0,
+				"slider": true,
+				"slider-step": 1.0,
+				"input": true
+			},
+			"enable-if": "enable-dt-clamp"
+		},
+		"anti-jitter-enabled": {
+			"name": "Reduce Corridor Jitter",
+			"description": "When the player is squeezed between a top and bottom collision at the same time (e.g. a tight corridor exactly the cube's hitbox size combined with a blue orb), zero out vertical velocity in postCollision to reduce visible shaking. Experimental.",
+			"type": "bool",
+			"default": true
+		}
+	},
+	"incompatibilities": {}
+}

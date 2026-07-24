@@ -1,0 +1,237 @@
+{
+	"geode": "5.7.1",
+	"gd": {
+		"win": "2.2081",
+		"mac": "2.2081",
+		"android": "2.2081",
+		"ios": "2.2081"
+	},
+	"id": "user.input-forgiveness-suite",
+	"name": "Better input",
+	"version": "v1.0.0",
+	"developer": "user",
+	"description": "Coyote time, jump buffer, optional jump boost, hold-flight smoothing (ship + swing, gravity-flip aware), and a read-only Wave Consistency HUD — all in one. Addon for Subtick Inputs API.",
+	"tags": [
+		"gameplay",
+		"enhancement",
+		"cheat"
+	],
+	"settings": {
+		"coyote-enabled": {
+			"name": "Coyote Time",
+			"description": "Jump pressed shortly after walking off an edge still registers.",
+			"type": "bool",
+			"default": true
+		},
+		"coyote-window-ms": {
+			"name": "Coyote Window (ms)",
+			"description": "How many ms after leaving the ground a jump input is still accepted.",
+			"type": "float",
+			"default": 50.0,
+			"min": 1.0,
+			"max": 150.0,
+			"control": { "slider": true },
+			"enable-if": "coyote-enabled",
+			"enable-if-description": "Enable Coyote Time first"
+		},
+		"buffer-enabled": {
+			"name": "Jump Buffer",
+			"description": "Jump pressed slightly before landing still fires when you touch the ground.",
+			"type": "bool",
+			"default": true
+		},
+		"buffer-window-ms": {
+			"name": "Buffer Window (ms)",
+			"description": "How many ms before landing a buffered jump press is accepted.",
+			"type": "float",
+			"default": 50.0,
+			"min": 1.0,
+			"max": 150.0,
+			"control": { "slider": true },
+			"enable-if": "buffer-enabled",
+			"enable-if-description": "Enable Jump Buffer first"
+		},
+		"jump-boost-enabled": {
+			"name": "Jump Boost",
+			"description": "Adds a small extra push on top of every jump. Not a 'fix' for anything — Subtick Inputs' slightly lower jump height on late-tick clicks is correct physics, not a bug. This is an optional buff for players who want jumps to feel a bit stronger anyway.",
+			"type": "bool",
+			"default": false
+		},
+		"jump-boost-amount": {
+			"name": "Boost Amount (GD velocity units)",
+			"description": "Flat extra velocity added on a real jump, not a percentage. Default 0.3 ≈ barely noticeable. Try 0.5-1.0 if you want it more obvious. Values above ~2 will feel like a real height increase, not a tweak.",
+			"type": "float",
+			"default": 0.3,
+			"min": 0.0,
+			"max": 3.0,
+			"control": {
+				"slider": true,
+				"slider-step": 0.01,
+				"arrows": true,
+				"arrow-step": 0.01,
+				"big-arrows": true,
+				"big-arrow-step": 0.1,
+				"input": true
+			},
+			"enable-if": "jump-boost-enabled",
+			"enable-if-description": "Enable Jump Boost first"
+		},
+		"debounce-enabled": {
+			"name": "Re-grant Debounce",
+			"description": "Minimum gap between two forgiveness grants to prevent spam-clicking from chaining coyote + buffer into a double trigger.",
+			"type": "bool",
+			"default": true
+		},
+		"debounce-ms": {
+			"name": "Debounce Gap (ms)",
+			"description": "Minimum ms between two forgiveness grants for the same player.",
+			"type": "float",
+			"default": 40.0,
+			"min": 0.0,
+			"max": 200.0,
+			"control": { "slider": true },
+			"enable-if": "debounce-enabled",
+			"enable-if-description": "Enable Re-grant Debounce first"
+		},
+		"straight-fly-enabled": {
+			"name": "Straight Fly (Ship)",
+			"description": "Smooths ship Y-velocity between physics ticks to reduce jitter while holding the button. Re-snaps instantly (does not blend) across gamemode changes or gravity flips, so it won't drag a post-flip ship toward its pre-flip feel. Does not affect trajectory or input timing.",
+			"type": "bool",
+			"default": false
+		},
+		"smooth-swing-enabled": {
+			"name": "Smooth Swing",
+			"description": "Same jitter-smoothing as Straight Fly, applied to swing instead of ship. Shares the Smoothing Factor / Tap Grace Window settings below.",
+			"type": "bool",
+			"default": false
+		},
+		"straight-fly-smoothing": {
+			"name": "Smoothing Factor",
+			"description": "0 = no smoothing (vanilla), higher = smoother but more lag. Keep at or below 0.5. Shared by Straight Fly and Smooth Swing.",
+			"type": "float",
+			"default": 0.2,
+			"min": 0.0,
+			"max": 0.5,
+			"control": { "slider": true }
+		},
+		"straight-fly-grace-ms": {
+			"name": "Tap Grace Window (ms)",
+			"description": "How long after releasing the button the smoothed state is kept (for rhythm tap-patterns). Shared by Straight Fly and Smooth Swing.",
+			"type": "float",
+			"default": 80.0,
+			"min": 0.0,
+			"max": 300.0,
+			"control": { "slider": true }
+		},
+		"robot-boost-coyote-enabled": {
+			"name": "Robot Boost Coyote",
+			"description": "Widens the coyote window while a robot is mid-boost off a pad (gravity is temporarily suppressed for it, so the normal window can feel too strict there).",
+			"type": "bool",
+			"default": false,
+			"enable-if": "coyote-enabled",
+			"enable-if-description": "Enable Coyote Time first"
+		},
+		"robot-boost-coyote-multiplier": {
+			"name": "Robot Boost Coyote Multiplier",
+			"description": "Coyote window is multiplied by this while the robot-boost condition holds.",
+			"type": "float",
+			"default": 1.5,
+			"min": 1.0,
+			"max": 4.0,
+			"control": { "slider": true },
+			"enable-if": "robot-boost-coyote-enabled",
+			"enable-if-description": "Enable Robot Boost Coyote first"
+		},
+		"warn-small-windows": {
+			"name": "Warn About Unresolvable Windows",
+			"description": "Logs a warning in the console (does not change gameplay) if a coyote/buffer window is set narrower than what Subtick Inputs API's Input Hz setting can actually resolve.",
+			"type": "bool",
+			"default": true
+		},
+		"warn-gravity-flip-anomaly": {
+			"name": "Warn On Ship Gravity-Flip Anomaly",
+			"description": "Diagnostic only, changes no physics. Logs a warning when a ship gravity portal/orb flip likely landed on Subtick Inputs API's anomalous gravity-coefficient branch for that tick (the moment that can feel like the ship suddenly got 'heavier'). Useful for confirming the issue is happening on a level before reporting it upstream.",
+			"type": "bool",
+			"default": false
+		},
+
+		"wave-hud-enabled": {
+			"name": "Wave Consistency HUD",
+			"description": "Read-only overlay showing how consistent your wave click timing is, in ms. Never modifies input, physics, or the input queue — display only.",
+			"type": "bool",
+			"default": false
+		},
+		"wave-hud-target-mode": {
+			"name": "Target Interval Mode",
+			"description": "How the 'ideal' click interval is determined.",
+			"type": "string",
+			"default": "rolling-average",
+			"one-of": ["rolling-average", "first-click", "manual"],
+			"enable-if": "wave-hud-enabled",
+			"enable-if-description": "Enable Wave Consistency HUD first"
+		},
+		"wave-hud-manual-target-ms": {
+			"name": "Manual Target (ms)",
+			"description": "Used only if Target Interval Mode = manual.",
+			"type": "double",
+			"default": 100.0,
+			"min": 1.0,
+			"max": 2000.0,
+			"enable-if": "wave-hud-enabled",
+			"enable-if-description": "Enable Wave Consistency HUD first"
+		},
+		"wave-hud-history-size": {
+			"name": "History Size",
+			"description": "How many recent clicks to keep for rolling average / display.",
+			"type": "int",
+			"default": 20,
+			"min": 2,
+			"max": 200,
+			"enable-if": "wave-hud-enabled",
+			"enable-if-description": "Enable Wave Consistency HUD first"
+		},
+		"wave-hud-good-threshold-ms": {
+			"name": "Good Threshold (ms)",
+			"description": "Below this deviation = shown green.",
+			"type": "double",
+			"default": 8.0,
+			"min": 1.0,
+			"max": 100.0,
+			"enable-if": "wave-hud-enabled",
+			"enable-if-description": "Enable Wave Consistency HUD first"
+		},
+		"wave-hud-bad-threshold-ms": {
+			"name": "Bad Threshold (ms)",
+			"description": "Above this deviation = shown red (between = yellow).",
+			"type": "double",
+			"default": 20.0,
+			"min": 1.0,
+			"max": 200.0,
+			"enable-if": "wave-hud-enabled",
+			"enable-if-description": "Enable Wave Consistency HUD first"
+		},
+		"wave-hud-scale": {
+			"name": "HUD Scale",
+			"description": "Size of the wave consistency overlay.",
+			"type": "double",
+			"default": 1.0,
+			"min": 0.5,
+			"max": 2.0,
+			"enable-if": "wave-hud-enabled",
+			"enable-if-description": "Enable Wave Consistency HUD first"
+		}
+	},
+	"dependencies": {
+		"chizz.subtick-inputs-api": {
+			"version": ">=v0.3.1",
+			"required": true
+		}
+	},
+	"incompatibilities": {
+		"syzzi.click_between_frames": ">=v1.0.0",
+		"zmx.cbf-lite": ">=v1.0.0",
+		"alphalaneous.click_after_frames": ">=v1.0.0",
+		"user.coyote-time": ">=v1.0.0",
+		"user.jump-height-fix": ">=v1.0.0"
+	}
+}
